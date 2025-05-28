@@ -55,14 +55,6 @@ export default function Login() {
       }
     }
 
-    // 타임아웃으로 무한 로딩 방지
-    const timeout = setTimeout(() => {
-      if (mounted && loading) {
-        setLoading(false)
-        setErrorMessage('로딩 시간이 초과되었습니다.')
-      }
-    }, 5000) // 5초 타임아웃
-
     checkAuth()
 
     if (hasSupabaseConfig) {
@@ -81,13 +73,11 @@ export default function Login() {
 
       return () => {
         mounted = false
-        clearTimeout(timeout)
         subscription.unsubscribe()
       }
     } else {
       return () => {
         mounted = false
-        clearTimeout(timeout)
       }
     }
   }, [router, hasSupabaseConfig])
