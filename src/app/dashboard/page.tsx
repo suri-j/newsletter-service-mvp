@@ -33,8 +33,19 @@ export default function Dashboard() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [debugMode, setDebugMode] = useState(false)
 
   useEffect(() => {
+    console.log('Dashboard useEffect triggered:', { user, authLoading, userEmail: user?.email })
+    
+    // 디버그 모드 체크 (URL 파라미터로 활성화)
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('debug') === 'true') {
+      setDebugMode(true)
+      setLoading(false)
+      return
+    }
+
     // 인증이 완료되고 사용자가 없으면 로그인 페이지로 리다이렉트
     if (!authLoading && !user) {
       console.log('No user found, redirecting to login')
@@ -73,24 +84,51 @@ export default function Dashboard() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">인증 확인 중...</p>
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left">
+            <h4 className="font-semibold mb-2">디버깅 정보:</h4>
+            <p className="text-sm">authLoading: {authLoading.toString()}</p>
+            <p className="text-sm">user: {user ? user.email : 'null'}</p>
+            <p className="text-sm">timestamp: {new Date().toISOString()}</p>
+            <button
+              onClick={() => window.location.href = '/dashboard?debug=true'}
+              className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-sm"
+            >
+              디버그 모드로 대시보드 보기
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
   // 사용자가 없으면 로그인 페이지로 리다이렉트 중
-  if (!user) {
+  if (!user && !debugMode) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">로그인 페이지로 이동 중...</p>
-          <button
-            onClick={() => router.push('/login')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            수동으로 로그인 페이지 이동
-          </button>
+          <div className="mt-4 space-y-2">
+            <button
+              onClick={() => router.push('/login')}
+              className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              수동으로 로그인 페이지 이동
+            </button>
+            <button
+              onClick={() => window.location.href = '/dashboard?debug=true'}
+              className="block w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
+            >
+              디버그 모드로 대시보드 보기
+            </button>
+          </div>
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left">
+            <h4 className="font-semibold mb-2">디버깅 정보:</h4>
+            <p className="text-sm">authLoading: {authLoading.toString()}</p>
+            <p className="text-sm">user: {user ? user.email : 'null'}</p>
+            <p className="text-sm">debugMode: {debugMode.toString()}</p>
+            <p className="text-sm">timestamp: {new Date().toISOString()}</p>
+          </div>
         </div>
       </div>
     )
@@ -99,6 +137,27 @@ export default function Dashboard() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* Debug Mode Banner */}
+        {debugMode && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 className="font-semibold text-yellow-800 mb-2">🔧 디버그 모드</h4>
+            <p className="text-sm text-yellow-700 mb-2">
+              인증 없이 대시보드를 표시하고 있습니다.
+            </p>
+            <div className="text-xs text-yellow-600">
+              <p>authLoading: {authLoading.toString()}</p>
+              <p>user: {user?.email || 'null'}</p>
+              <p>debugMode: {debugMode.toString()}</p>
+            </div>
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="mt-2 px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+            >
+              일반 모드로 돌아가기
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -106,7 +165,7 @@ export default function Dashboard() {
               대시보드
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              안녕하세요, {user.email}님! 뉴스레터 서비스 현황을 한눈에 확인하세요.
+              안녕하세요, {debugMode ? '디버그 사용자' : user?.email}님! 뉴스레터 서비스 현황을 한눈에 확인하세요.
             </p>
           </div>
           <Link

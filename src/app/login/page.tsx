@@ -196,6 +196,17 @@ export default function Login() {
               </button>
               
               <button
+                onClick={() => {
+                  // 강제로 대시보드로 이동 (인증 체크 무시)
+                  console.log('Force redirecting to dashboard...')
+                  window.location.href = '/dashboard'
+                }}
+                className="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                강제 대시보드 이동 (디버깅용)
+              </button>
+              
+              <button
                 onClick={async () => {
                   try {
                     console.log('Starting force logout...')
