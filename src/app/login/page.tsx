@@ -198,17 +198,61 @@ export default function Login() {
               <button
                 onClick={async () => {
                   try {
+                    console.log('Starting force logout...')
                     const supabase = getSupabaseClient()
+                    
+                    // 1. Supabase 로그아웃
                     await supabase.auth.signOut()
-                    window.location.reload() // 페이지 새로고침으로 상태 초기화
+                    
+                    // 2. 로컬 스토리지 완전 삭제
+                    localStorage.clear()
+                    sessionStorage.clear()
+                    
+                    // 3. 쿠키 삭제 (Supabase 관련)
+                    document.cookie.split(";").forEach((c) => {
+                      const eqPos = c.indexOf("=")
+                      const name = eqPos > -1 ? c.substr(0, eqPos) : c
+                      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+                      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname
+                    })
+                    
+                    console.log('Logout completed, reloading page...')
+                    
+                    // 4. 강제 페이지 새로고침 (캐시 무시)
+                    window.location.href = window.location.origin + '/login?t=' + Date.now()
+                    
                   } catch (error) {
                     console.error('Logout error:', error)
+                    // 에러가 발생해도 강제로 페이지 새로고침
+                    window.location.href = window.location.origin + '/login?t=' + Date.now()
                   }
                 }}
                 className="block w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
-                로그아웃 후 다시 로그인
+                강제 로그아웃 (완전 초기화)
               </button>
+              
+              <button
+                onClick={() => {
+                  // 시크릿 모드 안내
+                  alert('시크릿/프라이빗 모드에서 테스트해보세요:\n\nChrome: Ctrl+Shift+N\nFirefox: Ctrl+Shift+P\nEdge: Ctrl+Shift+N\n\n또는 브라우저 캐시를 삭제하세요:\nCtrl+Shift+Delete')
+                }}
+                className="block w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                시크릿 모드 / 캐시 삭제 안내
+              </button>
+            </div>
+            
+            {/* 추가 안내 */}
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-left">
+              <h4 className="font-semibold text-yellow-800 mb-2">🔧 문제 해결 방법</h4>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                <li>1. "강제 로그아웃" 버튼 클릭</li>
+                <li>2. 브라우저 캐시 삭제 (Ctrl+Shift+Delete)</li>
+                <li>3. 시크릿/프라이빗 모드에서 테스트</li>
+                <li>4. 다른 브라우저에서 테스트</li>
+                <li>5. 브라우저 완전 종료 후 재시작</li>
+              </ul>
             </div>
             
             {/* 디버깅 정보 */}
