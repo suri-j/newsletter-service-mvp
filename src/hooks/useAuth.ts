@@ -37,10 +37,7 @@ export function useAuth() {
   const signInWithGoogle = async () => {
     const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
-      }
+      provider: 'google'
     })
     if (error) throw error
   }
@@ -59,10 +56,7 @@ export function useAuth() {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signUp({
       email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      }
+      password
     })
     if (error) throw error
     return data

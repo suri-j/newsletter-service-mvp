@@ -12,9 +12,9 @@ export default function Home() {
   useEffect(() => {
     // 로그인된 사용자는 대시보드로 리다이렉트
     if (user && !loading) {
-      router.push('/dashboard')
+      window.location.replace('/dashboard')
     }
-  }, [user, loading, router])
+  }, [user, loading])
 
   // 로딩 중이면 로딩 화면 표시
   if (loading) {
