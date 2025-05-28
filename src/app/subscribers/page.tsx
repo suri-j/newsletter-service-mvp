@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useAuth } from '@/hooks/useAuth';
 import { getAllSubscribers, createSubscriber, deleteSubscriber, updateSubscriber } from '@/lib/database.utils';
 import { Database } from '@/lib/database.types';
@@ -37,8 +36,6 @@ export default function SubscribersPage() {
   const [newName, setNewName] = useState('');
   
   const itemsPerPage = 10;
-
-  const supabase = createClientComponentClient<Database>();
 
   useEffect(() => {
     if (user) {

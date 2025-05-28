@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { getSupabaseClient } from '@/lib/supabase';
 import { parseUnsubscribeToken } from '@/lib/email-utils';
 import { Database } from '@/lib/database.types';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   
@@ -15,8 +15,6 @@ export default function UnsubscribePage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-
-  const supabase = createClientComponentClient<Database>();
 
   useEffect(() => {
     if (token) {
@@ -39,6 +37,8 @@ export default function UnsubscribePage() {
         setError('유효하지 않은 토큰입니다.');
         return;
       }
+
+      const supabase = getSupabaseClient();
 
       // 구독자 조회
       const { data: subscriber, error: fetchError } = await supabase
@@ -141,5 +141,26 @@ export default function UnsubscribePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <h2 className="mt-4 text-lg font-medium text-gray-900">
+                페이지 로딩 중...
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <UnsubscribeContent />
+    </Suspense>
   );
 } 
