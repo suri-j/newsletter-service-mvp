@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import MainLayout from '@/components/layout/MainLayout'
 
 interface Stats {
   total_newsletters: number
@@ -96,207 +97,209 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
-            대시보드
-          </h1>
-          <p className="mt-1 text-sm text-gray-600">
-            안녕하세요, {user.email}님! 뉴스레터 서비스 현황을 한눈에 확인하세요.
-          </p>
-        </div>
-        <Link
-          href="/newsletters/create"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          새 뉴스레터
-        </Link>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">오류</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>{error}</p>
-              </div>
-              <div className="mt-4">
-                <button
-                  onClick={loadStats}
-                  className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
-                >
-                  다시 시도
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <EnvelopeIcon className="h-6 w-6 text-gray-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    총 뉴스레터
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {loading ? '...' : stats.total_newsletters}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <UserGroupIcon className="h-6 w-6 text-gray-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    총 구독자
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {loading ? '...' : stats.total_subscribers}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <PaperAirplaneIcon className="h-6 w-6 text-gray-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    총 발송
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {loading ? '...' : stats.total_sends}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CalendarIcon className="h-6 w-6 text-gray-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    이번 달 발송
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {loading ? '...' : stats.this_month_sends}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            빠른 작업
-          </h3>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/newsletters/create"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <EnvelopeIcon className="h-8 w-8 text-blue-600 mr-4" />
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">새 뉴스레터 작성</h4>
-                <p className="text-sm text-gray-500">새로운 뉴스레터를 작성하고 발송하세요</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/subscribers"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <UserGroupIcon className="h-8 w-8 text-green-600 mr-4" />
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">구독자 관리</h4>
-                <p className="text-sm text-gray-500">구독자를 추가하고 관리하세요</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/newsletters"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ChartBarIcon className="h-8 w-8 text-purple-600 mr-4" />
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">뉴스레터 관리</h4>
-                <p className="text-sm text-gray-500">기존 뉴스레터를 확인하고 관리하세요</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            최근 활동
-          </h3>
-        </div>
-        <div className="p-6">
-          <div className="text-center py-8">
-            <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">활동 내역이 없습니다</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              뉴스레터를 작성하고 발송하면 여기에 활동 내역이 표시됩니다.
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              대시보드
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              안녕하세요, {user.email}님! 뉴스레터 서비스 현황을 한눈에 확인하세요.
             </p>
-            <div className="mt-6">
+          </div>
+          <Link
+            href="/newsletters/create"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            새 뉴스레터
+          </Link>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">오류</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{error}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={loadStats}
+                    className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <EnvelopeIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      총 뉴스레터
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {loading ? '...' : stats.total_newsletters}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <UserGroupIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      총 구독자
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {loading ? '...' : stats.total_subscribers}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <PaperAirplaneIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      총 발송
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {loading ? '...' : stats.total_sends}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CalendarIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      이번 달 발송
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {loading ? '...' : stats.this_month_sends}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              빠른 작업
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
                 href="/newsletters/create"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                첫 번째 뉴스레터 작성하기
+                <EnvelopeIcon className="h-8 w-8 text-blue-600 mr-4" />
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">새 뉴스레터 작성</h4>
+                  <p className="text-sm text-gray-500">새로운 뉴스레터를 작성하고 발송하세요</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/subscribers"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <UserGroupIcon className="h-8 w-8 text-green-600 mr-4" />
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">구독자 관리</h4>
+                  <p className="text-sm text-gray-500">구독자를 추가하고 관리하세요</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/newsletters"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <ChartBarIcon className="h-8 w-8 text-purple-600 mr-4" />
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">뉴스레터 관리</h4>
+                  <p className="text-sm text-gray-500">기존 뉴스레터를 확인하고 관리하세요</p>
+                </div>
               </Link>
             </div>
           </div>
         </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              최근 활동
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="text-center py-8">
+              <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">활동 내역이 없습니다</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                뉴스레터를 작성하고 발송하면 여기에 활동 내역이 표시됩니다.
+              </p>
+              <div className="mt-6">
+                <Link
+                  href="/newsletters/create"
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  첫 번째 뉴스레터 작성하기
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   )
 } 
