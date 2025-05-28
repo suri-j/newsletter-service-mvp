@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { resend, emailConfig } from '@/lib/resend';
+import { getResendClient, emailConfig } from '@/lib/resend';
 import { renderNewsletterEmail } from '@/lib/email-utils';
 import { getNewsletterById } from '@/lib/database.utils';
 import { Database } from '@/lib/database.types';
@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 이메일 발송
+    const resend = getResendClient();
     const emailResult = await resend.emails.send({
       from: emailConfig.from,
       to: recipientEmail,
