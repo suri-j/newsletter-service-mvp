@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface Status {
   supabaseUrl: string
@@ -32,6 +32,7 @@ export default function TestStatus() {
 
       // 연결 테스트
       try {
+        const supabase = getSupabaseClient()
         const { data, error } = await supabase.auth.getSession()
         
         if (error) {

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 
 export default function Login() {
@@ -34,7 +34,7 @@ export default function Login() {
           return
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const { data: { session }, error } = await getSupabaseClient().auth.getSession()
         
         if (!mounted) return
         
@@ -71,7 +71,7 @@ export default function Login() {
     checkAuth()
 
     if (hasSupabaseConfig) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      const { data: { subscription } } = getSupabaseClient().auth.onAuthStateChange(
         async (event, session) => {
           if (!mounted) return
           
@@ -117,7 +117,7 @@ export default function Login() {
       setIsSigningIn(true)
       setErrorMessage('')
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await getSupabaseClient().auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`
@@ -157,7 +157,7 @@ export default function Login() {
       setErrorMessage('')
       
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await getSupabaseClient().auth.signUp({
           email,
           password,
           options: {
@@ -167,7 +167,7 @@ export default function Login() {
         if (error) throw error
         setErrorMessage('회원가입이 완료되었습니다! 이메일을 확인하여 계정을 활성화해주세요.')
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await getSupabaseClient().auth.signInWithPassword({
           email,
           password
         })

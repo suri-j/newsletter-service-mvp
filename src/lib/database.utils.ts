@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { getSupabaseClient } from './supabase'
 import { Database } from './database.types'
 
 type Newsletter = Database['public']['Tables']['newsletters']['Row']
@@ -8,6 +8,7 @@ type NewsletterSend = Database['public']['Tables']['newsletter_sends']['Row']
 // Newsletter operations
 export const newsletterOperations = {
   async getAll(userId: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletters')
       .select('*')
@@ -19,6 +20,7 @@ export const newsletterOperations = {
   },
 
   async getById(id: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletters')
       .select('*')
@@ -30,6 +32,7 @@ export const newsletterOperations = {
   },
 
   async create(newsletter: Database['public']['Tables']['newsletters']['Insert']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletters')
       .insert(newsletter)
@@ -41,6 +44,7 @@ export const newsletterOperations = {
   },
 
   async update(id: string, updates: Database['public']['Tables']['newsletters']['Update']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletters')
       .update(updates)
@@ -53,6 +57,7 @@ export const newsletterOperations = {
   },
 
   async delete(id: string) {
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('newsletters')
       .delete()
@@ -65,6 +70,7 @@ export const newsletterOperations = {
 // Subscriber operations
 export const subscriberOperations = {
   async getAll(userId: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('subscribers')
       .select('*')
@@ -76,6 +82,7 @@ export const subscriberOperations = {
   },
 
   async create(subscriber: Database['public']['Tables']['subscribers']['Insert']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('subscribers')
       .insert(subscriber)
@@ -87,6 +94,7 @@ export const subscriberOperations = {
   },
 
   async createMany(subscribers: Database['public']['Tables']['subscribers']['Insert'][]) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('subscribers')
       .insert(subscribers)
@@ -97,6 +105,7 @@ export const subscriberOperations = {
   },
 
   async update(id: string, updates: Database['public']['Tables']['subscribers']['Update']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('subscribers')
       .update(updates)
@@ -109,6 +118,7 @@ export const subscriberOperations = {
   },
 
   async delete(id: string) {
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('subscribers')
       .delete()
@@ -118,6 +128,7 @@ export const subscriberOperations = {
   },
 
   async unsubscribe(id: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('subscribers')
       .update({ 
@@ -136,6 +147,7 @@ export const subscriberOperations = {
 // Newsletter send operations
 export const newsletterSendOperations = {
   async create(send: Database['public']['Tables']['newsletter_sends']['Insert']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletter_sends')
       .insert(send)
@@ -147,6 +159,7 @@ export const newsletterSendOperations = {
   },
 
   async createMany(sends: Database['public']['Tables']['newsletter_sends']['Insert'][]) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletter_sends')
       .insert(sends)
@@ -166,6 +179,7 @@ export const newsletterSendOperations = {
       updates.sent_at = new Date().toISOString()
     }
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletter_sends')
       .update(updates)
@@ -178,6 +192,7 @@ export const newsletterSendOperations = {
   },
 
   async getByNewsletter(newsletterId: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('newsletter_sends')
       .select(`
@@ -194,6 +209,7 @@ export const newsletterSendOperations = {
 // Statistics operations
 export const statsOperations = {
   async getUserStats(userId: string) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .rpc('get_newsletter_stats', { user_uuid: userId })
     
@@ -210,6 +226,7 @@ export const statsOperations = {
 // User operations
 export const userOperations = {
   async getOrCreate(userId: string, email: string, name?: string, avatarUrl?: string) {
+    const supabase = getSupabaseClient()
     // First try to get existing user
     const { data: existingUser } = await supabase
       .from('users')
@@ -238,6 +255,7 @@ export const userOperations = {
   },
 
   async update(userId: string, updates: Database['public']['Tables']['users']['Update']) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('users')
       .update(updates)
