@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
-import { User } from '@supabase/supabase-js'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Login() {
@@ -16,36 +15,18 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showContent, setShowContent] = useState(false)
 
   // 환경 변수가 설정되어 있는지 확인
   const hasSupabaseConfig = process.env.NEXT_PUBLIC_SUPABASE_URL && 
                            process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_url_here'
 
   useEffect(() => {
-    // 5초 후에는 무조건 콘텐츠를 보여줌 (무한 로딩 방지)
-    const timeout = setTimeout(() => {
-      console.log('Login timeout reached, showing content')
-      setShowContent(true)
-    }, 5000)
-
-    // 로그인된 사용자는 대시보드로 리다이렉트
-    if (user && !loading) {
+    // 로그인된 사용자만 대시보드로 리다이렉트 (로딩 완료 후)
+    if (!loading && user) {
+      console.log('User authenticated, redirecting to dashboard:', user.email)
       router.push('/dashboard')
     }
-
-    // 로딩이 완료되면 콘텐츠 표시
-    if (!loading) {
-      setShowContent(true)
-    }
-
-    return () => clearTimeout(timeout)
   }, [user, loading, router])
-
-  // 강제로 로그인 페이지 콘텐츠 표시
-  const showLoginPage = () => {
-    setShowContent(true)
-  }
 
   const handleGoogleLogin = async () => {
     try {
@@ -109,9 +90,6 @@ export default function Login() {
       
       const supabase = getSupabaseClient()
       
-      // Supabase 프로젝트 정보 가져오기
-      const { data: { session } } = await supabase.auth.getSession()
-      
       // 직접 Google OAuth URL 구성
       const baseUrl = window.location.origin
       const redirectUrl = `${baseUrl}/auth/callback`
@@ -174,60 +152,35 @@ export default function Login() {
     }
   }
 
-  // 로딩 중이면서 아직 콘텐츠를 보여주지 않을 때
-  if ((loading || user) && !showContent) {
+  // 인증 로딩 중일 때만 로딩 화면 표시
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 mb-4">
-              {user ? '대시보드로 이동 중...' : '로딩 중...'}
-            </p>
-            
-            {/* 수동 이동 버튼들 */}
-            <div className="space-y-2">
-              {user && (
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  수동으로 대시보드 이동
-                </button>
-              )}
-              <button
-                onClick={showLoginPage}
-                className="block w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-              >
-                로그인 페이지 보기
-              </button>
-            </div>
-            
-            {/* 디버깅 정보 */}
-            <details className="mt-4 text-left">
-              <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보</summary>
-              <div className="mt-2 p-3 bg-gray-100 rounded text-xs">
-                <pre>{JSON.stringify({
-                  loading,
-                  hasUser: !!user,
-                  userEmail: user?.email,
-                  showContent,
-                  timestamp: new Date().toISOString()
-                }, null, 2)}</pre>
-              </div>
-            </details>
+            <p className="text-gray-600">인증 상태 확인 중...</p>
           </div>
         </div>
       </div>
     )
   }
 
+  // 이미 로그인된 사용자
   if (user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">대시보드로 이동 중...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              수동으로 대시보드 이동
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -320,8 +273,16 @@ export default function Login() {
                   </div>
 
                   <button
+                    onClick={handleDirectGoogleLogin}
+                    disabled={isLoading}
+                    className="w-full mt-4 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    직접 Google 로그인 (대체 방법)
+                  </button>
+
+                  <button
                     onClick={() => setShowEmailAuth(true)}
-                    className="w-full mt-4 px-4 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
+                    className="w-full mt-2 px-4 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
                   >
                     이메일로 로그인
                   </button>

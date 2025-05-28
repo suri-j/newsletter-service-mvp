@@ -1,93 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-  const [redirecting, setRedirecting] = useState(false)
-  const [showContent, setShowContent] = useState(false)
-
-  useEffect(() => {
-    // 5초 후에는 무조건 콘텐츠를 보여줌 (무한 로딩 방지)
-    const timeout = setTimeout(() => {
-      console.log('Timeout reached, showing content')
-      setShowContent(true)
-    }, 5000)
-
-    // 로그인된 사용자는 대시보드로 리다이렉트
-    if (user && !loading && !redirecting) {
-      setRedirecting(true)
-      console.log('User found, redirecting to dashboard:', user.email)
-      
-      // Next.js router를 사용하여 리다이렉트
-      router.push('/dashboard')
-    }
-
-    // 로딩이 완료되면 콘텐츠 표시
-    if (!loading && !user) {
-      setShowContent(true)
-    }
-
-    return () => clearTimeout(timeout)
-  }, [user, loading, router, redirecting])
-
-  // 강제로 홈페이지 콘텐츠 표시
-  const showHomePage = () => {
-    setShowContent(true)
-    setRedirecting(false)
-  }
-
-  // 로딩 중이거나 리다이렉트 중이면서 아직 콘텐츠를 보여주지 않을 때
-  if ((loading || redirecting || user) && !showContent) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 mb-4">
-            {user ? '대시보드로 이동 중...' : '로딩 중...'}
-          </p>
-          
-          {/* 수동 이동 버튼들 */}
-          <div className="space-y-2">
-            {user && (
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                수동으로 대시보드 이동
-              </button>
-            )}
-            <button
-              onClick={showHomePage}
-              className="block w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-            >
-              홈페이지 보기
-            </button>
-          </div>
-          
-          {/* 디버깅 정보 */}
-          <details className="mt-4 text-left">
-            <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보</summary>
-            <div className="mt-2 p-3 bg-gray-100 rounded text-xs">
-              <pre>{JSON.stringify({
-                loading,
-                hasUser: !!user,
-                userEmail: user?.email,
-                redirecting,
-                showContent,
-                timestamp: new Date().toISOString()
-              }, null, 2)}</pre>
-            </div>
-          </details>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
@@ -154,7 +69,7 @@ export default function Home() {
         </div>
 
         {/* 실제 기능 테스트 가이드 */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
           <h3 className="text-xl font-semibold text-green-800 mb-4">
             🧪 실제 기능 테스트 가이드
           </h3>
@@ -201,6 +116,28 @@ export default function Home() {
               테스트용 데이터를 생성해도 괜찮으니 자유롭게 모든 기능을 테스트해보세요!
             </p>
           </div>
+        </div>
+
+        {/* 추가 링크 */}
+        <div className="text-center space-y-4">
+          <div className="space-x-4">
+            <Link
+              href="/login"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              로그인
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              대시보드 (로그인 필요)
+            </Link>
+          </div>
+          
+          <p className="text-sm text-gray-500">
+            이미 로그인하셨다면 대시보드로 바로 이동하실 수 있습니다.
+          </p>
         </div>
       </div>
     </main>
