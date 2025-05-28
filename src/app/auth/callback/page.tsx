@@ -51,9 +51,12 @@ function AuthCallbackContent() {
             console.log('Authentication successful:', data.user.email)
             setStatus('success')
             
-            // 잠시 성공 메시지를 보여준 후 리다이렉트
+            // 즉시 리다이렉트 시도
+            router.push('/dashboard')
+            
+            // 백업 리다이렉트 (1.5초 후)
             setTimeout(() => {
-              router.push('/dashboard')
+              window.location.href = '/dashboard'
             }, 1500)
             return
           }
@@ -73,8 +76,13 @@ function AuthCallbackContent() {
         if (sessionData.session && sessionData.session.user) {
           console.log('Found existing session:', sessionData.session.user.email)
           setStatus('success')
+          
+          // 즉시 리다이렉트 시도
+          router.push('/dashboard')
+          
+          // 백업 리다이렉트
           setTimeout(() => {
-            router.push('/dashboard')
+            window.location.href = '/dashboard'
           }, 1000)
         } else {
           console.log('No session found')
@@ -124,7 +132,16 @@ function AuthCallbackContent() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">로그인 성공!</h2>
-          <p className="text-gray-600">대시보드로 이동 중...</p>
+          <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
+          <button
+            onClick={() => {
+              router.push('/dashboard')
+              setTimeout(() => window.location.href = '/dashboard', 500)
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            대시보드로 이동
+          </button>
         </div>
       </div>
     )
