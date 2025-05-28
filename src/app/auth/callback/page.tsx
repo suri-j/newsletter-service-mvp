@@ -21,6 +21,13 @@ function AuthCallbackContent() {
         const error_code = searchParams.get('error')
         const error_description = searchParams.get('error_description')
         
+        console.log('Callback URL params:', {
+          code: code ? 'present' : 'missing',
+          error_code,
+          error_description,
+          fullUrl: window.location.href
+        })
+        
         if (error_code) {
           console.error('OAuth error:', error_code, error_description)
           setError(`OAuth 오류: ${error_description || error_code}`)
@@ -28,38 +35,56 @@ function AuthCallbackContent() {
           return
         }
 
-        if (!code) {
-          setError('인증 코드가 없습니다.')
-          setStatus('error')
-          return
-        }
-
-        // 코드를 세션으로 교환
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-        
-        if (error) {
-          console.error('Code exchange error:', error)
-          setError(error.message)
-          setStatus('error')
-          return
-        }
-
-        if (data.session && data.user) {
-          // 인증 성공 - 대시보드로 리다이렉트
-          console.log('Authentication successful:', data.user.email)
-          setStatus('success')
+        if (code) {
+          console.log('Processing OAuth code...')
+          // 코드를 세션으로 교환
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
           
-          // 잠시 성공 메시지를 보여준 후 리다이렉트
+          if (error) {
+            console.error('Code exchange error:', error)
+            setError(`인증 처리 오류: ${error.message}`)
+            setStatus('error')
+            return
+          }
+
+          if (data.session && data.user) {
+            console.log('Authentication successful:', data.user.email)
+            setStatus('success')
+            
+            // 잠시 성공 메시지를 보여준 후 리다이렉트
+            setTimeout(() => {
+              router.push('/dashboard')
+            }, 1500)
+            return
+          }
+        }
+
+        // 코드가 없는 경우 현재 세션 확인
+        console.log('No code found, checking current session...')
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error('Session check error:', sessionError)
+          setError(`세션 확인 오류: ${sessionError.message}`)
+          setStatus('error')
+          return
+        }
+
+        if (sessionData.session && sessionData.session.user) {
+          console.log('Found existing session:', sessionData.session.user.email)
+          setStatus('success')
           setTimeout(() => {
             router.push('/dashboard')
-          }, 1500)
+          }, 1000)
         } else {
-          setError('세션 생성에 실패했습니다.')
+          console.log('No session found')
+          setError('인증 세션을 찾을 수 없습니다.')
           setStatus('error')
         }
+        
       } catch (err: any) {
-        console.error('Unexpected error:', err)
-        setError(err.message || '예상치 못한 오류가 발생했습니다.')
+        console.error('Unexpected error in auth callback:', err)
+        setError(`예상치 못한 오류: ${err.message || '알 수 없는 오류가 발생했습니다.'}`)
         setStatus('error')
       }
     }
@@ -72,7 +97,7 @@ function AuthCallbackContent() {
     if (status === 'error') {
       const timer = setTimeout(() => {
         router.push('/login')
-      }, 3000)
+      }, 5000) // 5초로 늘림
       return () => clearTimeout(timer)
     }
   }, [status, router])
@@ -107,15 +132,21 @@ function AuthCallbackContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
+      <div className="text-center max-w-md mx-auto p-6">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">로그인 실패</h2>
-        <p className="text-gray-600 mb-4">{error}</p>
-        <p className="text-sm text-gray-500">3초 후 로그인 페이지로 이동합니다...</p>
+        <p className="text-gray-600 mb-4 text-sm">{error}</p>
+        <p className="text-sm text-gray-500 mb-4">5초 후 로그인 페이지로 이동합니다...</p>
+        <button
+          onClick={() => router.push('/login')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          지금 로그인 페이지로 이동
+        </button>
       </div>
     </div>
   )
