@@ -51,13 +51,8 @@ function AuthCallbackContent() {
             console.log('Authentication successful:', data.user.email)
             setStatus('success')
             
-            // 즉시 리다이렉트 시도
-            router.push('/dashboard')
-            
-            // 백업 리다이렉트 (1.5초 후)
-            setTimeout(() => {
-              window.location.href = '/dashboard'
-            }, 1500)
+            // 강제 리다이렉트 (페이지 교체)
+            window.location.replace('/dashboard')
             return
           }
         }
@@ -77,13 +72,8 @@ function AuthCallbackContent() {
           console.log('Found existing session:', sessionData.session.user.email)
           setStatus('success')
           
-          // 즉시 리다이렉트 시도
-          router.push('/dashboard')
-          
-          // 백업 리다이렉트
-          setTimeout(() => {
-            window.location.href = '/dashboard'
-          }, 1000)
+          // 강제 리다이렉트 (페이지 교체)
+          window.location.replace('/dashboard')
         } else {
           console.log('No session found')
           setError('인증 세션을 찾을 수 없습니다.')
@@ -135,8 +125,7 @@ function AuthCallbackContent() {
           <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
           <button
             onClick={() => {
-              router.push('/dashboard')
-              setTimeout(() => window.location.href = '/dashboard', 500)
+              window.location.replace('/dashboard')
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
