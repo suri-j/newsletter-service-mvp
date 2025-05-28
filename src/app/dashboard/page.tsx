@@ -12,6 +12,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Stats {
   total_newsletters: number
@@ -21,7 +22,8 @@ interface Stats {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<Stats>({
     total_newsletters: 0,
     total_subscribers: 0,
@@ -29,31 +31,66 @@ export default function Dashboard() {
     this_month_sends: 0
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // 인증이 완료되고 사용자가 없으면 로그인 페이지로 리다이렉트
+    if (!authLoading && !user) {
+      console.log('No user found, redirecting to login')
+      router.push('/login')
+      return
+    }
+
     if (user) {
+      console.log('User found in dashboard:', user.email)
       loadStats()
     }
-  }, [user])
+  }, [user, authLoading, router])
 
   const loadStats = async () => {
     if (!user) return
     
     try {
+      setError(null)
+      console.log('Loading stats for user:', user.id)
       const userStats = await getUserStats(user.id)
+      console.log('Stats loaded:', userStats)
       setStats(userStats)
     } catch (error) {
       console.error('통계 로드 실패:', error)
+      setError('통계를 불러오는데 실패했습니다.')
       // 에러 발생 시 기본값 유지
     } finally {
       setLoading(false)
     }
   }
 
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 사용자가 없으면 로그인 페이지로 리다이렉트 중
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">로그인 페이지로 이동 중...</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            수동으로 로그인 페이지 이동
+          </button>
+        </div>
       </div>
     )
   }
@@ -67,7 +104,7 @@ export default function Dashboard() {
             대시보드
           </h1>
           <p className="mt-1 text-sm text-gray-600">
-            뉴스레터 서비스 현황을 한눈에 확인하세요.
+            안녕하세요, {user.email}님! 뉴스레터 서비스 현황을 한눈에 확인하세요.
           </p>
         </div>
         <Link
@@ -78,6 +115,33 @@ export default function Dashboard() {
           새 뉴스레터
         </Link>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-md bg-red-50 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">오류</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={loadStats}
+                  className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

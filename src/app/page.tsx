@@ -1,20 +1,25 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
     // 로그인된 사용자는 대시보드로 리다이렉트
-    if (user && !loading) {
-      window.location.replace('/dashboard')
+    if (user && !loading && !redirecting) {
+      setRedirecting(true)
+      console.log('User found, redirecting to dashboard:', user.email)
+      
+      // Next.js router를 사용하여 리다이렉트
+      router.push('/dashboard')
     }
-  }, [user, loading])
+  }, [user, loading, router, redirecting])
 
   // 로딩 중이면 로딩 화면 표시
   if (loading) {
@@ -29,12 +34,18 @@ export default function Home() {
   }
 
   // 로그인된 사용자는 리다이렉트 중 메시지 표시
-  if (user) {
+  if (user || redirecting) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">대시보드로 이동 중...</p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            수동으로 대시보드 이동
+          </button>
         </div>
       </div>
     )
