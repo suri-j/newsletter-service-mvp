@@ -10,28 +10,57 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<string>('')
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         const supabase = getSupabaseClient()
         
-        // URL에서 코드와 에러 파라미터 확인
+        // 디버깅 정보 수집
+        const currentUrl = window.location.href
         const code = searchParams.get('code')
         const error_code = searchParams.get('error')
         const error_description = searchParams.get('error_description')
         
-        console.log('Callback URL params:', {
-          code: code ? 'present' : 'missing',
+        const debugData = {
+          currentUrl,
+          hasCode: !!code,
+          codeLength: code?.length || 0,
           error_code,
           error_description,
-          fullUrl: window.location.href
-        })
+          timestamp: new Date().toISOString()
+        }
+        
+        setDebugInfo(JSON.stringify(debugData, null, 2))
+        console.log('Auth callback debug info:', debugData)
         
         if (error_code) {
           console.error('OAuth error:', error_code, error_description)
           setError(`OAuth 오류: ${error_description || error_code}`)
           setStatus('error')
+          return
+        }
+
+        // 현재 세션 먼저 확인
+        console.log('Checking current session...')
+        const { data: currentSession, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error('Session check error:', sessionError)
+          setError(`세션 확인 오류: ${sessionError.message}`)
+          setStatus('error')
+          return
+        }
+
+        if (currentSession.session && currentSession.session.user) {
+          console.log('Found existing session, redirecting to dashboard')
+          setStatus('success')
+          
+          // 즉시 리다이렉트
+          setTimeout(() => {
+            window.location.href = '/dashboard'
+          }, 500)
           return
         }
 
@@ -51,34 +80,18 @@ function AuthCallbackContent() {
             console.log('Authentication successful:', data.user.email)
             setStatus('success')
             
-            // 강제 리다이렉트 (페이지 교체)
-            window.location.replace('/dashboard')
+            // 세션 설정 후 잠시 대기 후 리다이렉트
+            setTimeout(() => {
+              window.location.href = '/dashboard'
+            }, 1000)
             return
           }
         }
 
-        // 코드가 없는 경우 현재 세션 확인
-        console.log('No code found, checking current session...')
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.error('Session check error:', sessionError)
-          setError(`세션 확인 오류: ${sessionError.message}`)
-          setStatus('error')
-          return
-        }
-
-        if (sessionData.session && sessionData.session.user) {
-          console.log('Found existing session:', sessionData.session.user.email)
-          setStatus('success')
-          
-          // 강제 리다이렉트 (페이지 교체)
-          window.location.replace('/dashboard')
-        } else {
-          console.log('No session found')
-          setError('인증 세션을 찾을 수 없습니다.')
-          setStatus('error')
-        }
+        // 모든 경우에 실패한 경우
+        console.log('No valid session or code found')
+        setError('인증에 실패했습니다. 다시 로그인해주세요.')
+        setStatus('error')
         
       } catch (err: any) {
         console.error('Unexpected error in auth callback:', err)
@@ -94,19 +107,29 @@ function AuthCallbackContent() {
   useEffect(() => {
     if (status === 'error') {
       const timer = setTimeout(() => {
-        router.push('/login')
-      }, 5000) // 5초로 늘림
+        window.location.href = '/login'
+      }, 5000)
       return () => clearTimeout(timer)
     }
-  }, [status, router])
+  }, [status])
 
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
+        <div className="text-center max-w-2xl mx-auto p-6">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">로그인 처리 중...</h2>
-          <p className="text-gray-600">Google 인증을 완료하고 있습니다.</p>
+          <p className="text-gray-600 mb-4">Google 인증을 완료하고 있습니다.</p>
+          
+          {/* 디버깅 정보 표시 */}
+          {debugInfo && (
+            <details className="mt-4 text-left">
+              <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보 보기</summary>
+              <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
+                {debugInfo}
+              </pre>
+            </details>
+          )}
         </div>
       </div>
     )
@@ -125,7 +148,7 @@ function AuthCallbackContent() {
           <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
           <button
             onClick={() => {
-              window.location.replace('/dashboard')
+              window.location.href = '/dashboard'
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
@@ -147,8 +170,19 @@ function AuthCallbackContent() {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">로그인 실패</h2>
         <p className="text-gray-600 mb-4 text-sm">{error}</p>
         <p className="text-sm text-gray-500 mb-4">5초 후 로그인 페이지로 이동합니다...</p>
+        
+        {/* 디버깅 정보 표시 */}
+        {debugInfo && (
+          <details className="mt-4 text-left">
+            <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보 보기</summary>
+            <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
+              {debugInfo}
+            </pre>
+          </details>
+        )}
+        
         <button
-          onClick={() => router.push('/login')}
+          onClick={() => window.location.href = '/login'}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           지금 로그인 페이지로 이동
