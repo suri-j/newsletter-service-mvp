@@ -291,7 +291,7 @@ export default function SendNewsletterPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">뉴스레터 발송</h1>
         <p className="mt-1 text-sm text-gray-600">
-          "{newsletter.title}" 뉴스레터를 구독자들에게 발송합니다.
+          &ldquo;{newsletter.title}&rdquo; 뉴스레터를 구독자들에게 발송합니다.
         </p>
       </div>
 
@@ -456,7 +456,7 @@ export default function SendNewsletterPage() {
                 </h3>
                 <div className="mt-2 px-7 py-3">
                   <p className="text-sm text-gray-500">
-                    "{newsletter.title}" 뉴스레터를{' '}
+                    &ldquo;{newsletter.title}&rdquo; 뉴스레터를{' '}
                     {sendToAll 
                       ? `${subscribers.length}명의 모든 구독자`
                       : `${selectedSubscribers.length}명의 선택된 구독자`

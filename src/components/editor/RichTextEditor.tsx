@@ -12,8 +12,7 @@ import {
   ListBulletIcon,
   NumberedListIcon,
   LinkIcon,
-  CodeBracketIcon,
-  QuoteLeftIcon
+  CodeBracketIcon
 } from '@heroicons/react/24/outline'
 
 interface RichTextEditorProps {
@@ -164,7 +163,7 @@ export default function RichTextEditor({
           }`}
           title="인용문"
         >
-          <QuoteLeftIcon className="w-4 h-4" />
+          <span className="text-sm font-bold">&ldquo;</span>
         </button>
 
         <div className="w-px h-6 bg-gray-300 mx-1"></div>

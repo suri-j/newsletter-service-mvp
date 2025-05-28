@@ -79,13 +79,13 @@ export default function Home() {
             <div className="flex items-start space-x-3">
               <span className="font-semibold text-green-800">1️⃣</span>
               <div>
-                <strong>로그인 테스트:</strong> 위의 "Google로 로그인하기" 버튼을 클릭하여 실제 Google OAuth 로그인을 테스트해보세요.
+                <strong>로그인 테스트:</strong> 위의 &ldquo;Google로 로그인하기&rdquo; 버튼을 클릭하여 실제 Google OAuth 로그인을 테스트해보세요.
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <span className="font-semibold text-green-800">2️⃣</span>
               <div>
-                <strong>뉴스레터 작성:</strong> 로그인 후 사이드바에서 "뉴스레터 작성"을 클릭하여 Rich Text Editor를 테스트해보세요.
+                <strong>뉴스레터 작성:</strong> 로그인 후 사이드바에서 &ldquo;뉴스레터 작성&rdquo;을 클릭하여 Rich Text Editor를 테스트해보세요.
               </div>
             </div>
             <div className="flex items-start space-x-3">
