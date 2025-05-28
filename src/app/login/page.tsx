@@ -93,10 +93,7 @@ export default function Login() {
       setErrorMessage('')
       
       const { error } = await getSupabaseClient().auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+        provider: 'google'
       })
       
       if (error) throw error
