@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export default function Login() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, session, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [debugInfo, setDebugInfo] = useState<string>('')
@@ -21,12 +21,24 @@ export default function Login() {
                            process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_url_here'
 
   useEffect(() => {
-    // 로그인된 사용자만 대시보드로 리다이렉트 (로딩 완료 후)
-    if (!loading && user) {
-      console.log('User authenticated, redirecting to dashboard:', user.email)
+    // 디버깅 정보 업데이트
+    const debugData = {
+      loading,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasSession: !!session,
+      sessionAccessToken: !!session?.access_token,
+      timestamp: new Date().toISOString()
+    }
+    setDebugInfo(JSON.stringify(debugData, null, 2))
+    console.log('Login page debug:', debugData)
+
+    // 로그인된 사용자만 대시보드로 리다이렉트 (로딩 완료 후, 유효한 세션 확인)
+    if (!loading && user && session && session.access_token) {
+      console.log('Valid user session found, redirecting to dashboard:', user.email)
       router.push('/dashboard')
     }
-  }, [user, loading, router])
+  }, [user, session, loading, router])
 
   const handleGoogleLogin = async () => {
     try {
@@ -40,16 +52,7 @@ export default function Login() {
       const baseUrl = window.location.origin
       const redirectUrl = `${baseUrl}/auth/callback`
       
-      const debugData = {
-        currentUrl,
-        baseUrl,
-        redirectUrl,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      }
-      
-      setDebugInfo(JSON.stringify(debugData, null, 2))
-      console.log('Google login debug info:', debugData)
+      console.log('Initiating Google login with redirect:', redirectUrl)
       
       // 명시적으로 redirect URL 설정
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -87,8 +90,6 @@ export default function Login() {
     try {
       setIsLoading(true)
       setError(null)
-      
-      const supabase = getSupabaseClient()
       
       // 직접 Google OAuth URL 구성
       const baseUrl = window.location.origin
@@ -160,26 +161,47 @@ export default function Login() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">인증 상태 확인 중...</p>
+            
+            {/* 디버깅 정보 */}
+            {debugInfo && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보</summary>
+                <div className="mt-2 p-3 bg-gray-100 rounded text-xs">
+                  <pre>{debugInfo}</pre>
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </div>
     )
   }
 
-  // 이미 로그인된 사용자
-  if (user) {
+  // 이미 로그인된 사용자 (유효한 세션 확인)
+  if (user && session && session.access_token) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
+            <p className="text-sm text-gray-500 mb-4">로그인된 사용자: {user.email}</p>
             <button
               onClick={() => router.push('/dashboard')}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               수동으로 대시보드 이동
             </button>
+            
+            {/* 디버깅 정보 */}
+            {debugInfo && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">디버깅 정보</summary>
+                <div className="mt-2 p-3 bg-gray-100 rounded text-xs">
+                  <pre>{debugInfo}</pre>
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </div>

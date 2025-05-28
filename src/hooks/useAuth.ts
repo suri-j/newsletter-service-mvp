@@ -23,18 +23,34 @@ export function useAuth() {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('Getting initial session...')
         const supabase = getSupabaseClient()
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (!mounted) return
+
+        console.log('Initial session result:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email,
+          error: error?.message 
+        })
 
         if (error) {
           console.error('Session check error:', error)
           setSession(null)
           setUser(null)
         } else {
-          setSession(session)
-          setUser(session?.user ?? null)
+          // 세션과 사용자가 모두 유효한 경우에만 설정
+          if (session && session.user && session.access_token) {
+            console.log('Valid session found:', session.user.email)
+            setSession(session)
+            setUser(session.user)
+          } else {
+            console.log('No valid session found')
+            setSession(null)
+            setUser(null)
+          }
         }
       } catch (error) {
         console.error('Failed to get initial session:', error)
@@ -59,9 +75,23 @@ export function useAuth() {
         async (event, session) => {
           if (!mounted) return
           
-          console.log('Auth state changed:', event, session?.user?.email)
-          setSession(session)
-          setUser(session?.user ?? null)
+          console.log('Auth state changed:', { 
+            event, 
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            userEmail: session?.user?.email 
+          })
+
+          // 세션과 사용자가 모두 유효한 경우에만 설정
+          if (session && session.user && session.access_token) {
+            console.log('Setting valid user:', session.user.email)
+            setSession(session)
+            setUser(session.user)
+          } else {
+            console.log('Clearing user session')
+            setSession(null)
+            setUser(null)
+          }
           setLoading(false)
         }
       )
@@ -130,11 +160,23 @@ export function useAuth() {
       const supabase = getSupabaseClient()
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      
+      // 로그아웃 후 상태 초기화
+      setUser(null)
+      setSession(null)
     } catch (error) {
       console.error('Sign out error:', error)
       throw error
     }
   }
+
+  // 디버깅을 위한 추가 정보
+  console.log('useAuth state:', { 
+    loading, 
+    hasUser: !!user, 
+    userEmail: user?.email,
+    hasSession: !!session 
+  })
 
   return {
     user,
