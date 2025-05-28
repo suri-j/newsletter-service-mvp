@@ -1,5 +1,3 @@
-import { renderToStaticMarkup } from 'react-dom/server';
-import NewsletterTemplate from '@/components/email/NewsletterTemplate';
 import { Database } from './database.types';
 
 type Newsletter = Database['public']['Tables']['newsletters']['Row'];
@@ -14,17 +12,44 @@ export function renderNewsletterEmail(
   baseUrl: string = 'http://localhost:3000'
 ): string {
   const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${generateUnsubscribeToken(subscriber.id)}`;
+  const previewText = getPreviewText(newsletter.content);
   
-  const emailHtml = renderToStaticMarkup(
-    NewsletterTemplate({
-      title: newsletter.title,
-      content: newsletter.content,
-      unsubscribeUrl,
-      previewText: getPreviewText(newsletter.content)
-    })
-  );
+  // 간단한 HTML 템플릿 사용
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${newsletter.title}</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .title { font-size: 24px; font-weight: bold; margin: 0; color: #1a1a1a; }
+        .content { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 14px; color: #6c757d; text-align: center; }
+        .unsubscribe { color: #6c757d; text-decoration: none; }
+        .unsubscribe:hover { text-decoration: underline; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1 class="title">${newsletter.title}</h1>
+      </div>
+      
+      <div class="content">
+        ${newsletter.content}
+      </div>
+      
+      <div class="footer">
+        <p>이 이메일이 더 이상 필요하지 않으시면 <a href="${unsubscribeUrl}" class="unsubscribe">구독을 취소</a>하실 수 있습니다.</p>
+        <p>© 2024 Newsletter Service. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+  `;
 
-  return `<!DOCTYPE html>${emailHtml}`;
+  return emailHtml;
 }
 
 /**
