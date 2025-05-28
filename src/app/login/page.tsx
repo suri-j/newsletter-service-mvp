@@ -186,12 +186,30 @@ export default function Login() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600 mb-4">대시보드로 이동 중...</p>
             <p className="text-sm text-gray-500 mb-4">로그인된 사용자: {user.email}</p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              수동으로 대시보드 이동
-            </button>
+            
+            <div className="space-y-2">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                수동으로 대시보드 이동
+              </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const supabase = getSupabaseClient()
+                    await supabase.auth.signOut()
+                    window.location.reload() // 페이지 새로고침으로 상태 초기화
+                  } catch (error) {
+                    console.error('Logout error:', error)
+                  }
+                }}
+                className="block w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                로그아웃 후 다시 로그인
+              </button>
+            </div>
             
             {/* 디버깅 정보 */}
             {debugInfo && (
