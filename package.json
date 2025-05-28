@@ -1,0 +1,42 @@
+{
+  "name": "newsletter",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.49.8",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tiptap/extension-link": "^2.12.0",
+    "@tiptap/extension-placeholder": "^2.12.0",
+    "@tiptap/extension-typography": "^2.12.0",
+    "@tiptap/pm": "^2.12.0",
+    "@tiptap/react": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
+    "@types/papaparse": "^5.3.16",
+    "@types/react-datepicker": "^6.2.0",
+    "next": "14.2.0",
+    "papaparse": "^5.5.3",
+    "react": "^18",
+    "react-datepicker": "^8.4.0",
+    "react-dom": "^18.3.1",
+    "resend": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}
