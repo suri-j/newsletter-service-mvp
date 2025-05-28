@@ -15,7 +15,6 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [isOfflineMode, setIsOfflineMode] = useState(false)
 
   // 환경 변수가 설정되어 있는지 확인
   const hasSupabaseConfig = process.env.NEXT_PUBLIC_SUPABASE_URL && 
@@ -26,11 +25,10 @@ export default function Login() {
     
     const checkAuth = async () => {
       try {
-        // 환경 변수가 없으면 오프라인 모드
+        // 환경 변수가 없으면 에러 표시
         if (!hasSupabaseConfig) {
-          setIsOfflineMode(true)
+          setErrorMessage('Supabase 설정이 필요합니다. 환경 변수를 설정해주세요.')
           setLoading(false)
-          setErrorMessage('Supabase 설정이 필요합니다. 데모 모드로 진행하거나 환경 변수를 설정해주세요.')
           return
         }
 
@@ -41,7 +39,6 @@ export default function Login() {
         if (error) {
           console.error('세션 확인 오류:', error)
           setErrorMessage('연결 오류가 발생했습니다. 환경 변수를 확인해주세요.')
-          setIsOfflineMode(true)
         } else if (session?.user) {
           setUser(session.user)
           router.push('/dashboard')
@@ -49,8 +46,7 @@ export default function Login() {
       } catch (error) {
         console.error('인증 확인 중 오류:', error)
         if (mounted) {
-          setErrorMessage('서비스 연결에 문제가 있습니다. 데모 모드를 사용해주세요.')
-          setIsOfflineMode(true)
+          setErrorMessage('서비스 연결에 문제가 있습니다.')
         }
       } finally {
         if (mounted) {
@@ -63,8 +59,7 @@ export default function Login() {
     const timeout = setTimeout(() => {
       if (mounted && loading) {
         setLoading(false)
-        setErrorMessage('로딩 시간이 초과되었습니다. 데모 모드를 사용해주세요.')
-        setIsOfflineMode(true)
+        setErrorMessage('로딩 시간이 초과되었습니다.')
       }
     }, 5000) // 5초 타임아웃
 
@@ -96,16 +91,6 @@ export default function Login() {
       }
     }
   }, [router, hasSupabaseConfig])
-
-  const handleDemoLogin = () => {
-    // 데모 모드로 대시보드에 접근
-    localStorage.setItem('demo_user', JSON.stringify({
-      id: 'demo-user-123',
-      email: 'demo@example.com',
-      user_metadata: { full_name: 'Demo User' }
-    }))
-    router.push('/dashboard')
-  }
 
   const handleGoogleSignIn = async () => {
     if (!hasSupabaseConfig) {
@@ -188,15 +173,6 @@ export default function Login() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">로딩 중...</p>
-          <button
-            onClick={() => {
-              setLoading(false)
-              setIsOfflineMode(true)
-            }}
-            className="mt-4 text-sm text-blue-600 hover:text-blue-500 underline"
-          >
-            로딩 건너뛰기 (데모 모드)
-          </button>
         </div>
       </div>
     )
@@ -218,9 +194,7 @@ export default function Login() {
           <div className={`p-4 rounded-lg border ${
             errorMessage.includes('완료') 
               ? 'bg-green-50 border-green-200 text-green-800'
-              : isOfflineMode 
-                ? 'bg-orange-50 border-orange-200 text-orange-800'
-                : 'bg-red-50 border-red-200 text-red-800'
+              : 'bg-red-50 border-red-200 text-red-800'
           }`}>
             <p className="text-sm">{errorMessage}</p>
             {errorMessage.includes('Google 로그인이 설정되지') && (
@@ -234,26 +208,8 @@ export default function Login() {
           </div>
         )}
 
-        {/* 오프라인/데모 모드일 때 */}
-        {isOfflineMode && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4 text-center">
-              🎯 데모 모드로 체험하기
-            </h3>
-            <p className="text-sm text-blue-700 mb-4 text-center">
-              실제 데이터베이스 없이 UI와 기능을 체험할 수 있습니다
-            </p>
-            <button
-              onClick={handleDemoLogin}
-              className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-            >
-              데모 모드로 시작하기
-            </button>
-          </div>
-        )}
-
-        {/* 실제 로그인 폼 */}
-        {!isOfflineMode && (
+        {/* 로그인 폼 */}
+        {hasSupabaseConfig && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="space-y-6">
               {!showEmailAuth ? (
@@ -387,11 +343,11 @@ export default function Login() {
         )}
 
         {/* 환경 변수 설정 안내 */}
-        {isOfflineMode && (
+        {!hasSupabaseConfig && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-800 mb-2">⚙️ 실제 환경 설정</h4>
+            <h4 className="font-semibold text-yellow-800 mb-2">⚙️ 환경 설정 필요</h4>
             <p className="text-sm text-yellow-700 mb-2">
-              실제 기능을 사용하려면 .env.local 파일에 다음을 추가하세요:
+              서비스를 사용하려면 .env.local 파일에 다음을 추가하세요:
             </p>
             <pre className="text-xs bg-yellow-100 p-2 rounded overflow-x-auto">
 {`NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
