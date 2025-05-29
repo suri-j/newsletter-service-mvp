@@ -41,19 +41,25 @@ export async function middleware(req: NextRequest) {
     const protectedRoutes = ['/dashboard', '/create', '/subscribers', '/send', '/analytics', '/settings', '/newsletters', '/scheduled']
     const isProtectedRoute = protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route))
 
-    // 로그인 페이지에서 대시보드로의 직접 접근을 허용 (임시 해결책)
+    // 로그인 페이지에서 오는 모든 보호된 라우트 접근을 허용 (임시 해결책)
     const referer = req.headers.get('referer')
-    const isFromLogin = referer && referer.includes('/login')
+    const isFromLoginOrDashboard = referer && (referer.includes('/login') || referer.includes('/dashboard') || referer.includes('/newsletters') || referer.includes('/subscribers'))
     
-    if (isFromLogin && req.nextUrl.pathname === '/dashboard') {
-      console.log('🔄 Middleware: allowing dashboard access from login page')
+    if (isFromLoginOrDashboard && isProtectedRoute) {
+      console.log('🔄 Middleware: allowing protected route access from authenticated pages')
       return res
     }
 
-    // If accessing protected route without session, redirect to login
+    // 세션이 없을 때만 체크하고, 있으면 통과 (더 관대한 접근)
     if (isProtectedRoute && !session) {
       console.log('🚫 Middleware: redirecting to login (no session)')
       return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    // 세션이 있으면 모든 보호된 라우트 접근 허용
+    if (session && isProtectedRoute) {
+      console.log('✅ Middleware: allowing protected route access (has session)')
+      return res
     }
 
     // If logged in and trying to access login page, redirect to dashboard

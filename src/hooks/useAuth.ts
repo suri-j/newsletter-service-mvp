@@ -25,6 +25,11 @@ export function useAuth() {
       try {
         console.log('Getting initial session...')
         const supabase = getSupabaseClient()
+        
+        // 먼저 로컬 스토리지에서 세션 확인
+        const storedSession = localStorage.getItem(`sb-${window.location.hostname.replace(/\./g, '-')}-auth-token`)
+        console.log('Stored session in localStorage:', !!storedSession)
+        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (!mounted) return
@@ -33,11 +38,18 @@ export function useAuth() {
           hasSession: !!session, 
           hasUser: !!session?.user,
           userEmail: session?.user?.email,
+          hasStoredSession: !!storedSession,
           error: error?.message 
         })
 
         if (error) {
           console.error('Session check error:', error)
+          // 에러가 있어도 로컬 스토리지에 세션이 있다면 재시도
+          if (storedSession) {
+            console.log('Retrying session check due to stored session...')
+            setTimeout(() => getInitialSession(), 1000)
+            return
+          }
           setSession(null)
           setUser(null)
         } else {
@@ -46,6 +58,11 @@ export function useAuth() {
             console.log('Valid session found:', session.user.email)
             setSession(session)
             setUser(session.user)
+          } else if (storedSession) {
+            // 세션이 없지만 로컬 스토리지에 있다면 재시도
+            console.log('No session but stored session exists, retrying...')
+            setTimeout(() => getInitialSession(), 500)
+            return
           } else {
             console.log('No valid session found')
             setSession(null)
