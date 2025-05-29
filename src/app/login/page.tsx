@@ -36,7 +36,17 @@ export default function Login() {
     // 로그인된 사용자만 대시보드로 리다이렉트 (로딩 완료 후, 유효한 세션 확인)
     if (!loading && user && session && session.access_token) {
       console.log('Valid user session found, redirecting to dashboard:', user.email)
-      router.push('/dashboard')
+      // 즉시 리디렉션하는 대신 약간의 지연을 두고 처리
+      const timer = setTimeout(() => {
+        try {
+          router.push('/dashboard')
+        } catch (error) {
+          console.error('Router push failed, using window.location:', error)
+          window.location.href = '/dashboard'
+        }
+      }, 100)
+      
+      return () => clearTimeout(timer)
     }
   }, [user, session, loading, router])
 
@@ -179,6 +189,21 @@ export default function Login() {
 
   // 이미 로그인된 사용자 (유효한 세션 확인)
   if (user && session && session.access_token) {
+    // 자동 리디렉션 시도
+    useEffect(() => {
+      const redirectTimer = setTimeout(() => {
+        console.log('Auto-redirecting to dashboard...')
+        try {
+          router.push('/dashboard')
+        } catch (error) {
+          console.error('Router push failed, using window.location:', error)
+          window.location.href = '/dashboard'
+        }
+      }, 1000) // 1초 후 자동 리디렉션
+
+      return () => clearTimeout(redirectTimer)
+    }, [router])
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
@@ -189,7 +214,14 @@ export default function Login() {
             
             <div className="space-y-2">
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => {
+                  try {
+                    router.push('/dashboard')
+                  } catch (error) {
+                    console.error('Router push failed, using window.location:', error)
+                    window.location.href = '/dashboard'
+                  }
+                }}
                 className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 수동으로 대시보드 이동
@@ -204,6 +236,16 @@ export default function Login() {
                 className="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
                 강제 대시보드 이동 (디버깅용)
+              </button>
+              
+              <button
+                onClick={() => {
+                  console.log('Testing routing to test-dashboard...')
+                  window.location.href = '/test-dashboard'
+                }}
+                className="block w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              >
+                🧪 라우팅 테스트 (test-dashboard)
               </button>
               
               <button
