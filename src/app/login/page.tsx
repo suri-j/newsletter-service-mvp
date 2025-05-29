@@ -50,6 +50,23 @@ export default function Login() {
     }
   }, [user, session, loading, router])
 
+  // 자동 리디렉션 추가 (조건부가 아닌 별도 useEffect)
+  useEffect(() => {
+    if (user && session && session.access_token) {
+      const redirectTimer = setTimeout(() => {
+        console.log('Auto-redirecting to dashboard...')
+        try {
+          router.push('/dashboard')
+        } catch (error) {
+          console.error('Router push failed, using window.location:', error)
+          window.location.href = '/dashboard'
+        }
+      }, 1000) // 1초 후 자동 리디렉션
+
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [user, session, router])
+
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true)
@@ -189,21 +206,6 @@ export default function Login() {
 
   // 이미 로그인된 사용자 (유효한 세션 확인)
   if (user && session && session.access_token) {
-    // 자동 리디렉션 시도
-    useEffect(() => {
-      const redirectTimer = setTimeout(() => {
-        console.log('Auto-redirecting to dashboard...')
-        try {
-          router.push('/dashboard')
-        } catch (error) {
-          console.error('Router push failed, using window.location:', error)
-          window.location.href = '/dashboard'
-        }
-      }, 1000) // 1초 후 자동 리디렉션
-
-      return () => clearTimeout(redirectTimer)
-    }, [router])
-
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">

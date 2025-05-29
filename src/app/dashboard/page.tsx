@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { getUserStats } from '@/lib/database.utils'
 import { 
@@ -35,6 +35,24 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
   const [debugMode, setDebugMode] = useState(false)
 
+  const loadStats = useCallback(async () => {
+    if (!user?.id) return
+    
+    try {
+      setError(null)
+      console.log('Loading stats for user:', user.id)
+      const userStats = await getUserStats(user.id)
+      console.log('Stats loaded:', userStats)
+      setStats(userStats)
+    } catch (error) {
+      console.error('통계 로드 실패:', error)
+      setError('통계를 불러오는데 실패했습니다.')
+      // 에러 발생 시 기본값 유지
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
   useEffect(() => {
     console.log('Dashboard useEffect triggered:', { user, authLoading, userEmail: user?.email })
     
@@ -57,25 +75,7 @@ export default function Dashboard() {
       console.log('User found in dashboard:', user.email)
       loadStats()
     }
-  }, [user, authLoading, router])
-
-  const loadStats = async () => {
-    if (!user) return
-    
-    try {
-      setError(null)
-      console.log('Loading stats for user:', user.id)
-      const userStats = await getUserStats(user.id)
-      console.log('Stats loaded:', userStats)
-      setStats(userStats)
-    } catch (error) {
-      console.error('통계 로드 실패:', error)
-      setError('통계를 불러오는데 실패했습니다.')
-      // 에러 발생 시 기본값 유지
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [user, authLoading, router, loadStats])
 
   // 인증 로딩 중
   if (authLoading) {
@@ -87,7 +87,7 @@ export default function Dashboard() {
           <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left">
             <h4 className="font-semibold mb-2">디버깅 정보:</h4>
             <p className="text-sm">authLoading: {authLoading.toString()}</p>
-            <p className="text-sm">user: {user ? user.email : 'null'}</p>
+            <p className="text-sm">user: {(user as any)?.email || 'null'}</p>
             <p className="text-sm">timestamp: {new Date().toISOString()}</p>
             <button
               onClick={() => window.location.href = '/dashboard?debug=true'}
@@ -125,7 +125,7 @@ export default function Dashboard() {
           <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left">
             <h4 className="font-semibold mb-2">디버깅 정보:</h4>
             <p className="text-sm">authLoading: {authLoading.toString()}</p>
-            <p className="text-sm">user: {user ? user.email : 'null'}</p>
+            <p className="text-sm">user: {(user as any)?.email || 'null'}</p>
             <p className="text-sm">debugMode: {debugMode.toString()}</p>
             <p className="text-sm">timestamp: {new Date().toISOString()}</p>
           </div>
@@ -146,7 +146,7 @@ export default function Dashboard() {
             </p>
             <div className="text-xs text-yellow-600">
               <p>authLoading: {authLoading.toString()}</p>
-              <p>user: {user?.email || 'null'}</p>
+              <p>user: {(user as any)?.email || 'null'}</p>
               <p>debugMode: {debugMode.toString()}</p>
             </div>
             <button
